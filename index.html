@@ -155,8 +155,34 @@
         </div>
     </header>
 
+    <!-- ONLINE MULTIPLAYER PRESENCE PILL (Visible when in Online Sanctuary Room) -->
+    <div id="online-hud-bar" class="fixed top-20 left-0 right-0 z-10 hidden justify-center px-4 pointer-events-none">
+        <div class="md3-surface pointer-events-auto rounded-full px-4 py-1.5 flex flex-wrap items-center justify-center gap-3 text-xs border border-purple-400/35 shadow-xl">
+            <div class="flex items-center gap-1.5">
+                <span id="online-presence-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                <span id="online-presence-text" class="font-medium text-gray-200">Awaiting Challenger...</span>
+            </div>
+            <div class="h-3.5 w-[1px] bg-white/15"></div>
+            <div class="flex items-center gap-1.5">
+                <span class="text-gray-400">Room:</span>
+                <span id="online-room-code" class="font-mono font-bold tracking-wider text-purple-300">------</span>
+            </div>
+            <button id="btn-copy-code" class="md3-btn rounded-full px-2.5 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-400/30 flex items-center gap-1 transition-all" title="Copy Room Code">
+                <span class="material-symbols-outlined text-[14px]">content_copy</span>
+                <span id="copy-code-label">Copy Code</span>
+            </button>
+            <button id="btn-copy-link" class="md3-btn rounded-full px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-200 border border-amber-400/30 flex items-center gap-1 transition-all" title="Copy Invite Link">
+                <span class="material-symbols-outlined text-[14px]">link</span>
+                <span id="copy-link-label">Invite Link</span>
+            </button>
+            <button id="btn-open-lobby" class="md3-btn rounded-full p-1 text-gray-300 hover:text-white" title="Sanctuary Room Settings">
+                <span class="material-symbols-outlined text-[16px]">tune</span>
+            </button>
+        </div>
+    </div>
+
     <!-- ACTION HINT TOAST (Appears briefly during combat or special states) -->
-    <div id="combat-toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-10 pointer-events-none opacity-0 transition-all duration-300 transform -translate-y-2">
+    <div id="combat-toast" class="fixed top-32 left-1/2 -translate-x-1/2 z-10 pointer-events-none opacity-0 transition-all duration-300 transform -translate-y-2">
         <div class="md3-surface rounded-full px-5 py-2 border border-purple-400/30 flex items-center gap-2.5 shadow-2xl">
             <span class="material-symbols-outlined text-purple-300 text-lg">swords</span>
             <span id="combat-toast-text" class="text-xs sm:text-sm font-medium tracking-wide text-purple-100">Knight strikes Pawn!</span>
@@ -167,11 +193,18 @@
     <nav aria-label="Primary Game Controls" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-10 max-w-[96vw]">
         <div class="md3-surface rounded-full p-1.5 flex items-center gap-1 sm:gap-1.5">
             
-            <!-- Game Mode Toggle: vs Wizard AI / 2-Player Pass & Play -->
-            <button id="btn-mode" class="md3-btn group rounded-full px-3.5 py-2.5 flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-200" aria-label="Toggle Opponent Mode">
+            <!-- Game Mode Cycle: vs Wizard AI / 2P Local / Online Friend -->
+            <button id="btn-mode" class="md3-btn group rounded-full px-3.5 py-2.5 flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-200" aria-label="Cycle Game Mode">
                 <span id="mode-icon" class="material-symbols-outlined text-[20px] text-purple-300">smart_toy</span>
                 <span id="mode-label" class="hidden sm:inline">vs Wizard AI</span>
-                <span class="md3-tooltip fixed -top-9 left-1/2 -translate-x-1/2 bg-zinc-900/95 text-white text-[11px] px-2.5 py-1 rounded-md border border-white/10 whitespace-nowrap">Switch AI / 2P Mode</span>
+                <span class="md3-tooltip fixed -top-9 left-1/2 -translate-x-1/2 bg-zinc-900/95 text-white text-[11px] px-2.5 py-1 rounded-md border border-white/10 whitespace-nowrap">Switch AI / 2P / Online</span>
+            </button>
+
+            <!-- Invite / Online Sanctuary Portal Button -->
+            <button id="btn-invite-modal" class="md3-btn group rounded-full px-3.5 py-2.5 flex items-center gap-1.5 text-xs sm:text-sm font-medium bg-emerald-500/15 text-emerald-200 border border-emerald-400/30" aria-label="Invite Friends Online">
+                <span class="material-symbols-outlined text-[19px] text-emerald-300">person_add</span>
+                <span class="hidden md:inline">Invite Friend</span>
+                <span class="md3-tooltip fixed -top-9 left-1/2 -translate-x-1/2 bg-zinc-900/95 text-white text-[11px] px-2.5 py-1 rounded-md border border-white/10 whitespace-nowrap">Host or Join Online Match</span>
             </button>
 
             <div class="h-6 w-[1px] bg-white/10"></div>
@@ -256,6 +289,111 @@
             <button id="btn-play-again" class="md3-btn w-full py-3 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold text-sm shadow-lg">
                 Reconstruct Enchanted Pieces
             </button>
+        </div>
+    </div>
+
+    <!-- ONLINE MULTIPLAYER INVITE & LOBBY MODAL (Material Design 3 Dialog) -->
+    <div id="multiplayer-overlay" class="fixed inset-0 z-30 hidden items-center justify-center bg-black/70 backdrop-blur-md p-4">
+        <div class="md3-surface rounded-3xl p-6 sm:p-7 max-w-md w-full border border-purple-400/35 shadow-2xl relative">
+            <!-- Close Modal Button -->
+            <button id="btn-close-mp" class="md3-btn absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:text-white" aria-label="Close Online Modal">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-11 h-11 rounded-2xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-purple-300 text-2xl">cast_connected</span>
+                </div>
+                <div>
+                    <h2 class="font-gothic text-lg font-bold text-white tracking-wider uppercase">Sanctuary Multiplayer</h2>
+                    <p class="text-xs text-gray-400">Summon a friend across the realm in real time</p>
+                </div>
+            </div>
+
+            <!-- Authenticated User Discoverability ID -->
+            <div class="mb-4 px-3 py-2 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-[11px] text-gray-400">
+                <span>Your Sanctuary ID:</span>
+                <span id="mp-user-id" class="font-mono text-gray-200 select-all break-all ml-2">Connecting...</span>
+            </div>
+
+            <!-- View 1: Create or Join Selection -->
+            <div id="mp-setup-view" class="space-y-4">
+                <!-- Host New Game Card -->
+                <div class="p-4 rounded-2xl bg-purple-500/10 border border-purple-400/25">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-purple-200">Host as Marble (White)</span>
+                        <span class="material-symbols-outlined text-purple-300 text-lg">auto_awesome</span>
+                    </div>
+                    <p class="text-xs text-gray-300 mb-3">Forge a new Sanctuary room and receive a 6-character code & invite link for your friend.</p>
+                    <button id="btn-create-room" class="md3-btn w-full py-2.5 rounded-full bg-[#d0bcff] text-[#381e72] font-semibold text-xs sm:text-sm shadow-md flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                        <span>Create Room & Invite Link</span>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-3 text-xs text-gray-500 uppercase tracking-widest">
+                    <div class="h-[1px] flex-1 bg-white/10"></div>
+                    <span>Or Join Friend</span>
+                    <div class="h-[1px] flex-1 bg-white/10"></div>
+                </div>
+
+                <!-- Join Existing Room Card -->
+                <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+                    <label for="input-room-code" class="block text-xs font-semibold uppercase tracking-wider text-amber-200 mb-2">Enter Friend's Room Code</label>
+                    <div class="flex gap-2">
+                        <input id="input-room-code" type="text" maxlength="8" placeholder="e.g. WIZ742" class="w-full px-4 py-2.5 rounded-full bg-black/50 border border-white/15 text-sm font-mono uppercase tracking-widest text-white placeholder-gray-500 focus:outline-none focus:border-purple-400" />
+                        <button id="btn-join-room" class="md3-btn px-5 py-2.5 rounded-full bg-purple-500/25 hover:bg-purple-500/35 text-purple-100 border border-purple-400/40 font-semibold text-xs sm:text-sm whitespace-nowrap">
+                            Join Match
+                        </button>
+                    </div>
+                    <p id="mp-error-msg" class="text-xs text-red-400 mt-2 hidden"></p>
+                </div>
+            </div>
+
+            <!-- View 2: Active Room Details & Share Panel -->
+            <div id="mp-active-view" class="hidden space-y-4">
+                <div class="p-4 rounded-2xl bg-purple-500/15 border border-purple-400/30 text-center">
+                    <span class="text-[11px] uppercase tracking-widest text-purple-300 block mb-1">Sanctuary Room Code</span>
+                    <div id="modal-room-code" class="font-mono text-3xl font-bold tracking-widest text-white mb-3 select-all">------</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="btn-modal-copy-code" class="md3-btn py-2 px-3 rounded-full bg-white/10 hover:bg-white/15 text-xs font-medium text-white flex items-center justify-center gap-1.5 border border-white/15">
+                            <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                            <span id="modal-copy-code-text">Copy Code</span>
+                        </button>
+                        <button id="btn-modal-copy-link" class="md3-btn py-2 px-3 rounded-full bg-[#d0bcff] text-[#381e72] text-xs font-semibold flex items-center justify-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px]">share</span>
+                            <span id="modal-copy-link-text">Copy Invite Link</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Seats Status -->
+                <div class="space-y-2 text-xs">
+                    <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-[#f5f2eb] shadow-[0_0_8px_#ffffff]"></span>
+                            <span class="font-medium text-gray-200">Marble Host (White)</span>
+                        </div>
+                        <span id="seat-white-status" class="font-mono text-[11px] text-emerald-300">Connected</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-zinc-900 border border-purple-400"></span>
+                            <span class="font-medium text-gray-200">Obsidian Guest (Black)</span>
+                        </div>
+                        <span id="seat-black-status" class="font-mono text-[11px] text-amber-300">Waiting for friend...</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-1">
+                    <button id="btn-resume-online" class="md3-btn flex-1 py-2.5 rounded-full bg-white/10 text-white font-medium text-xs border border-white/15">
+                        Return to Board
+                    </button>
+                    <button id="btn-leave-room" class="md3-btn px-4 py-2.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 font-medium text-xs">
+                        Leave Room
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -890,8 +1028,7 @@
                 gown.castShadow = true;
                 bodyGroup.add(gown);
 
-                constbust = new THREE.Mesh(new THREE.SphereGeometry(0.21, 20, 16), mainMat);
-                thebust = thebust = new THREE.Mesh(new THREE.SphereGeometry(0.20, 20, 16), mainMat);
+                const thebust = new THREE.Mesh(new THREE.SphereGeometry(0.20, 20, 16), mainMat);
                 thebust.position.y = 1.48;
                 bodyGroup.add(thebust);
 
@@ -1076,9 +1213,21 @@
         let legalMovesForSelected = [];
         let isAnimating = false;
         let pendingPromotionMove = null;
-        let vsAI = true;
+        let gameMode = 'ai'; // 'ai' | 'local' | 'online'
         let capturedWhite = 0;
         let capturedBlack = 0;
+
+        // Online Multiplayer State Hooks (Exposed on window for module script access)
+        const onlineState = window.onlineState = {
+            roomCode: null,
+            myColor: null, // 'w' | 'b' | 'spectator'
+            hostId: null,
+            guestId: null,
+            moveCount: 0,
+            resetNonce: 0,
+            pushMoveToCloud: null,
+            pushResetToCloud: null
+        };
 
         // Active Tween Animation State
         let activeMoveAnim = null;
@@ -1174,7 +1323,20 @@
 
         function selectSquare(sqName) {
             if (isAnimating || game.game_over()) return;
-            if (vsAI && game.turn() === 'b') return; // Wait for Wizard AI
+            if (gameMode === 'ai' && game.turn() === 'b') return; // Wait for Wizard AI
+
+            // In Online Multiplayer, ensure player can only command their own assigned color
+            if (gameMode === 'online') {
+                if (!onlineState.roomCode) {
+                    openMultiplayerModal();
+                    return;
+                }
+                if (onlineState.myColor !== game.turn()) {
+                    const mySideName = onlineState.myColor === 'w' ? 'Marble (White)' : 'Obsidian (Black)';
+                    showCombatToast(`Wait for your turn! You command ${mySideName}.`);
+                    return;
+                }
+            }
 
             // Check if clicked square is a legal destination for currently selected piece
             const chosenMove = legalMovesForSelected.find(m => m.to === sqName);
@@ -1186,7 +1348,7 @@
                     document.getElementById('promotion-overlay').classList.add('flex');
                     return;
                 }
-                executeAnimatedMove(selectedSquare, sqName, 'q');
+                executeAnimatedMove(selectedSquare, sqName, 'q', false);
                 return;
             }
 
@@ -1204,13 +1366,18 @@
             }
         }
 
-        function executeAnimatedMove(fromSq, toSq, promotionType = 'q') {
+        function executeAnimatedMove(fromSq, toSq, promotionType = 'q', isRemoteMove = false) {
             clearSquareHighlights();
             selectedSquare = null;
             legalMovesForSelected = [];
 
             const moveObj = game.move({ from: fromSq, to: toSq, promotion: promotionType });
             if (!moveObj) return;
+
+            // Broadcast local move to Firestore if in Online Multiplayer
+            if (gameMode === 'online' && !isRemoteMove && typeof onlineState.pushMoveToCloud === 'function') {
+                onlineState.pushMoveToCloud(moveObj);
+            }
 
             isAnimating = true;
             audio.playSlide();
@@ -1307,7 +1474,7 @@
             updateHUD();
 
             // Trigger Wizard AI response if vsAI and Black's turn
-            if (!game.game_over() && vsAI && game.turn() === 'b') {
+            if (!game.game_over() && gameMode === 'ai' && game.turn() === 'b') {
                 setTimeout(makeWizardAIMove, 520);
             }
         }
@@ -1470,6 +1637,48 @@
         /***********************************************************************
          * 10. UI HUD & SINGLE-LEVEL MATERIAL NAVIGATION BAR WIRING
          ***********************************************************************/
+        function openMultiplayerModal() {
+            const modal = document.getElementById('multiplayer-overlay');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeMultiplayerModal() {
+            const modal = document.getElementById('multiplayer-overlay');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function copyTextToClipboard(text, feedbackElemId, defaultLabel) {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            tempInput.style.position = 'fixed';
+            tempInput.style.opacity = '0';
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand('copy');
+                const el = document.getElementById(feedbackElemId);
+                if (el) {
+                    el.textContent = 'Copied!';
+                    setTimeout(() => { el.textContent = defaultLabel; }, 1800);
+                }
+            } catch (err) {
+                console.error('Copy failed', err);
+            }
+            document.body.removeChild(tempInput);
+        }
+
+        function setCameraForColor(color) {
+            const presetIdx = color === 'b' ? 1 : 0; // Black Choir vs White Nave
+            currentPresetIdx = presetIdx;
+            const preset = cameraPresets[presetIdx];
+            camState.targetTheta = preset.theta;
+            camState.targetPhi = preset.phi;
+            camState.targetRadius = preset.radius;
+            document.getElementById('camera-label').textContent = preset.name;
+        }
+
         function updateHUD() {
             const turn = game.turn();
             const dot = document.getElementById('turn-indicator-dot');
@@ -1478,10 +1687,61 @@
 
             if (turn === 'w') {
                 dot.className = 'w-3.5 h-3.5 rounded-full bg-[#f5f2eb] shadow-[0_0_12px_#ffffff] transition-all duration-300';
-                statusText.textContent = 'White (Marble) to Move';
+                if (gameMode === 'online') {
+                    statusText.textContent = onlineState.myColor === 'w'
+                        ? 'Your Turn — Marble (White)'
+                        : "Opponent's Turn — Marble (White)";
+                } else {
+                    statusText.textContent = 'White (Marble) to Move';
+                }
             } else {
                 dot.className = 'w-3.5 h-3.5 rounded-full bg-[#a855f7] shadow-[0_0_12px_#a855f7] transition-all duration-300';
-                statusText.textContent = vsAI ? 'Wizard AI (Obsidian) Thinking...' : 'Black (Obsidian) to Move';
+                if (gameMode === 'ai') {
+                    statusText.textContent = 'Wizard AI (Obsidian) Thinking...';
+                } else if (gameMode === 'online') {
+                    statusText.textContent = onlineState.myColor === 'b'
+                        ? 'Your Turn — Obsidian (Black)'
+                        : "Opponent's Turn — Obsidian (Black)";
+                } else {
+                    statusText.textContent = 'Black (Obsidian) to Move';
+                }
+            }
+
+            // Update Mode Button Appearance
+            const modeIcon = document.getElementById('mode-icon');
+            const modeLabel = document.getElementById('mode-label');
+            if (gameMode === 'ai') {
+                modeIcon.textContent = 'smart_toy';
+                modeLabel.textContent = 'vs Wizard AI';
+            } else if (gameMode === 'local') {
+                modeIcon.textContent = 'group';
+                modeLabel.textContent = '2P Pass & Play';
+            } else {
+                modeIcon.textContent = 'public';
+                modeLabel.textContent = onlineState.roomCode ? `Online (${onlineState.roomCode})` : 'Online Match';
+            }
+
+            // Update Online Presence Pill
+            const onlineBar = document.getElementById('online-hud-bar');
+            if (gameMode === 'online' && onlineState.roomCode) {
+                onlineBar.classList.remove('hidden');
+                onlineBar.classList.add('flex');
+                document.getElementById('online-room-code').textContent = onlineState.roomCode;
+
+                const pDot = document.getElementById('online-presence-dot');
+                const pText = document.getElementById('online-presence-text');
+                const myRoleText = onlineState.myColor === 'w' ? 'You: Marble' : (onlineState.myColor === 'b' ? 'You: Obsidian' : 'Spectating');
+
+                if (onlineState.hostId && onlineState.guestId) {
+                    pDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]';
+                    pText.textContent = `Friend Connected • ${myRoleText}`;
+                } else {
+                    pDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
+                    pText.textContent = `Waiting for Friend • ${myRoleText}`;
+                }
+            } else {
+                onlineBar.classList.add('hidden');
+                onlineBar.classList.remove('flex');
             }
 
             if (game.in_check()) {
@@ -1492,7 +1752,7 @@
 
             document.getElementById('captured-white-count').textContent = capturedWhite;
             document.getElementById('captured-black-count').textContent = capturedBlack;
-            document.getElementById('btn-undo').disabled = game.history().length === 0;
+            document.getElementById('btn-undo').disabled = gameMode === 'online' || game.history().length === 0;
 
             // Check Game Over States
             if (game.game_over()) {
@@ -1514,16 +1774,29 @@
             }
         }
 
-        // Mode Toggle Button
+        // Mode Cycle Button (Wizard AI -> 2P Pass & Play -> Online Multiplayer)
         document.getElementById('btn-mode').addEventListener('click', () => {
-            vsAI = !vsAI;
-            document.getElementById('mode-icon').textContent = vsAI ? 'smart_toy' : 'group';
-            document.getElementById('mode-label').textContent = vsAI ? 'vs Wizard AI' : '2P Pass & Play';
+            if (gameMode === 'ai') {
+                gameMode = 'local';
+            } else if (gameMode === 'local') {
+                gameMode = 'online';
+                if (!onlineState.roomCode) {
+                    openMultiplayerModal();
+                }
+            } else {
+                gameMode = 'ai';
+            }
             updateHUD();
-            if (vsAI && game.turn() === 'b' && !game.game_over() && !isAnimating) {
+            if (gameMode === 'ai' && game.turn() === 'b' && !game.game_over() && !isAnimating) {
                 setTimeout(makeWizardAIMove, 400);
             }
         });
+
+        // Invite Friend Button on Single-Level Bar
+        document.getElementById('btn-invite-modal').addEventListener('click', openMultiplayerModal);
+        document.getElementById('btn-open-lobby').addEventListener('click', openMultiplayerModal);
+        document.getElementById('btn-close-mp').addEventListener('click', closeMultiplayerModal);
+        document.getElementById('btn-resume-online').addEventListener('click', closeMultiplayerModal);
 
         // Camera Preset Cycle Button
         document.getElementById('btn-camera').addEventListener('click', () => {
@@ -1543,9 +1816,9 @@
 
         // Undo Move Button
         document.getElementById('btn-undo').addEventListener('click', () => {
-            if (isAnimating || game.history().length === 0) return;
+            if (gameMode === 'online' || isAnimating || game.history().length === 0) return;
             game.undo();
-            if (vsAI && game.turn() === 'b' && game.history().length > 0) {
+            if (gameMode === 'ai' && game.turn() === 'b' && game.history().length > 0) {
                 game.undo();
             }
             selectedSquare = null;
@@ -1557,6 +1830,10 @@
         // Wizard's Counsel (Command Move / Trigger Action)
         document.getElementById('btn-hint').addEventListener('click', () => {
             if (isAnimating || game.game_over()) return;
+            if (gameMode === 'online' && onlineState.myColor !== game.turn()) {
+                showCombatToast('Wait for your turn to invoke Wizard Counsel!');
+                return;
+            }
             makeWizardAIMove();
         });
 
@@ -1567,7 +1844,7 @@
         });
 
         // Reset Game
-        function resetGame() {
+        function resetGame(fromRemote = false) {
             activeMoveAnim = null;
             isAnimating = false;
             selectedSquare = null;
@@ -1578,25 +1855,29 @@
             document.getElementById('gameover-overlay').classList.add('hidden');
             document.getElementById('gameover-overlay').classList.remove('flex');
             syncBoardFromFEN();
+
+            if (gameMode === 'online' && !fromRemote && typeof onlineState.pushResetToCloud === 'function') {
+                onlineState.pushResetToCloud();
+            }
         }
 
-        document.getElementById('btn-reset').addEventListener('click', resetGame);
-        document.getElementById('btn-play-again').addEventListener('click', resetGame);
+        document.getElementById('btn-reset').addEventListener('click', () => resetGame(false));
+        document.getElementById('btn-play-again').addEventListener('click', () => resetGame(false));
 
-        // Promotion Dialog Buttons
+        //        // Pawn Promotion Selection Buttons
         document.querySelectorAll('.promo-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const promoType = btn.getAttribute('data-promo');
+                const promoType = btn.getAttribute('data-promo') || 'q';
                 document.getElementById('promotion-overlay').classList.add('hidden');
                 document.getElementById('promotion-overlay').classList.remove('flex');
                 if (pendingPromotionMove) {
-                    executeAnimatedMove(pendingPromotionMove.from, pendingPromotionMove.to, promoType);
+                    executeAnimatedMove(pendingPromotionMove.from, pendingPromotionMove.to, promoType, false);
                     pendingPromotionMove = null;
                 }
             });
         });
 
-        // Responsive Window Resize
+        // Responsive Resize Handler
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
@@ -1604,7 +1885,7 @@
         });
 
         /***********************************************************************
-         * 11. MAIN ANIMATION LOOP (IDLE BREATHING, MOVE, LUNGE & SHATTER)
+         * 11. MAIN ANIMATION LOOP (IDLE BREATHING, MOVE, STRIKE & SHATTER)
          ***********************************************************************/
         const clock = new THREE.Clock();
 
@@ -1614,43 +1895,33 @@
             const dt = Math.min(clock.getDelta(), 0.1);
             const elapsed = clock.getElapsedTime();
 
-            // 1. Update Camera & Torch Flicker
+            // 1. Update Camera Orbit
             updateCameraPosition(dt);
-            torchLightLeft.intensity = 1.3 + Math.sin(elapsed * 7.5) * 0.12 + Math.cos(elapsed * 13) * 0.06;
-            torchLightRight.intensity = 1.2 + Math.cos(elapsed * 6.2) * 0.10;
 
-            // Gentle drift for cathedral dust motes
+            // 2. Subtle Torchlight Flicker & Floating Cathedral Dust
+            torchLightLeft.intensity = 1.3 + Math.sin(elapsed * 7.5) * 0.12 + Math.cos(elapsed * 13.0) * 0.06;
+            torchLightRight.intensity = 1.2 + Math.cos(elapsed * 6.2) * 0.10;
             dustSystem.rotation.y = elapsed * 0.025;
 
-            // 2. Custom Idle Animations for all 32 Pieces
-            Object.entries(pieceMeshes).forEach(([sq, root]) => {
-                if (activeMoveAnim && (root === activeMoveAnim.attackerMesh || root === activeMoveAnim.defenderMesh)) {
-                    return; // Controlled by move/combat sequencer
-                }
+            // 3. Piece Idle Animation (Living Enchanted Statues)
+            Object.values(pieceMeshes).forEach(mesh => {
+                if (activeMoveAnim && mesh === activeMoveAnim.attackerMesh) return;
+                const { bodyGroup, phaseOffset, baseRotationY, type } = mesh.userData;
+                const breath = Math.sin(elapsed * 2.2 + phaseOffset);
+                bodyGroup.position.y = (breath + 1) * 0.018;
+                bodyGroup.rotation.z = Math.sin(elapsed * 1.1 + phaseOffset) * 0.015;
+                bodyGroup.rotation.y = baseRotationY + Math.cos(elapsed * 0.9 + phaseOffset) * 0.03;
 
-                const { bodyGroup, phaseOffset, baseRotationY } = root.userData;
-                const isSelected = sq === selectedSquare;
-
-                if (isSelected) {
-                    // Selected piece levitates with an arcane bob and golden readiness
-                    bodyGroup.position.y = 0.28 + Math.sin(elapsed * 5.5) * 0.06;
-                    bodyGroup.rotation.z = Math.sin(elapsed * 3.0) * 0.04;
-                } else {
-                    // Subtle living statue breathing & micro-sway
-                    bodyGroup.position.y = Math.sin(elapsed * 2.1 + phaseOffset) * 0.022;
-                    bodyGroup.rotation.z = Math.cos(elapsed * 1.4 + phaseOffset) * 0.014;
-                    bodyGroup.rotation.y = baseRotationY;
-                }
-
-                // Rotate Bishop's levitating orb if present
-                const orb = bodyGroup.getObjectByName('floatingOrb');
-                if (orb) {
-                    orb.rotation.y = elapsed * 2.5;
-                    orb.position.y = 1.78 + Math.sin(elapsed * 4 + phaseOffset) * 0.04;
+                if (type === 'b') {
+                    const orb = bodyGroup.getObjectByName('floatingOrb');
+                    if (orb) {
+                        orb.position.y = 1.78 + Math.sin(elapsed * 3.5 + phaseOffset) * 0.06;
+                        orb.rotation.y = elapsed * 2.0;
+                    }
                 }
             });
 
-            // 3. Custom Move & Attack Lunge Animation Sequencer
+            // 4. Active Move & Combat Strike Animation Sequencer
             if (activeMoveAnim) {
                 activeMoveAnim.elapsed += dt;
                 const t = Math.min(1, activeMoveAnim.elapsed / activeMoveAnim.duration);
@@ -1658,40 +1929,33 @@
                 const body = attackerMesh.userData.bodyGroup;
 
                 if (!isCapture) {
-                    // Smooth gliding slide (or high bounding leap for Knights)
+                    // Smooth Ease-In-Out Glide (or High Arc Leap for Knights)
                     const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
                     attackerMesh.position.lerpVectors(startPos, endPos, ease);
-
                     if (isKnight) {
-                        body.position.y = Math.sin(t * Math.PI) * 1.35;
+                        body.position.y = Math.sin(t * Math.PI) * 1.45;
                         body.rotation.x = Math.sin(t * Math.PI * 2) * 0.28;
                     } else {
-                        body.position.y = Math.sin(t * Math.PI) * 0.12;
-                        body.rotation.x = Math.sin(t * Math.PI) * 0.16; // Lean into glide
+                        body.position.y = Math.sin(t * Math.PI) * 0.14;
+                        body.rotation.x = Math.sin(t * Math.PI) * 0.10;
                     }
                 } else {
-                    // COMBAT SEQUENCE: Approach -> Wind-up -> Heavy Strike & Shatter -> Claim Square
-                    if (t < 0.55) {
-                        // Phase 1: Stalk to striking range (78% of the way to target)
-                        const p1 = t / 0.55;
-                        const easeP1 = 1 - Math.pow(1 - p1, 3);
+                    // Three-Phase Combat Strike & Shatter Sequence
+                    if (t < 0.52) {
+                        // Phase 1: Stalk up to striking distance
+                        const p1 = t / 0.52;
+                        const ease1 = 1 - Math.pow(1 - p1, 3);
                         const standOffPos = new THREE.Vector3().lerpVectors(startPos, endPos, 0.76);
-                        attackerMesh.position.lerpVectors(startPos, standOffPos, easeP1);
-                        body.position.y = Math.sin(p1 * Math.PI) * (isKnight ? 1.1 : 0.2);
-
-                        // Wind-up backward tilt right before strike
-                        body.rotation.x = -p1 * 0.38;
-
-                        // Defender trembles in anticipation
-                        if (defenderMesh) {
-                            defenderMesh.userData.bodyGroup.position.x = (Math.random() - 0.5) * 0.05;
-                        }
+                        attackerMesh.position.lerpVectors(startPos, standOffPos, ease1);
+                        body.position.y = isKnight ? Math.sin(p1 * Math.PI) * 1.2 : Math.sin(p1 * Math.PI) * 0.18;
+                        body.rotation.x = -p1 * 0.35; // Wind-up lean back
                     } else if (t < 0.72) {
-                        // Phase 2: Violent Lunge Strike! Trigger Shatter at impact!
-                        const p2 = (t - 0.55) / 0.17;
-                        body.rotation.x = -0.38 + p2 * 0.95; // Cleave forward
+                        // Phase 2: Heavy forward cleave & shatter impact
+                        const p2 = (t - 0.52) / 0.20;
+                        body.rotation.x = -0.35 + p2 * 0.92;
+                        body.position.y = (1 - p2) * 0.15;
 
-                        if (!activeMoveAnim.shattered && p2 > 0.35) {
+                        if (p2 >= 0.45 && !activeMoveAnim.shattered) {
                             activeMoveAnim.shattered = true;
                             if (defenderMesh) {
                                 scene.remove(defenderMesh);
@@ -1716,16 +1980,496 @@
                 }
             }
 
-            // 4. Update Shatter Shards & Shockwaves
+            // 5. Update Shatter Shards & Shockwaves
             updateShatterEffects(dt);
 
             renderer.render(scene, camera);
         }
 
+        // Expose core helpers to window so the Multiplayer Module can invoke them cleanly
+        window.game = game;
+        window.syncBoardFromFEN = syncBoardFromFEN;
+        window.executeAnimatedMove = executeAnimatedMove;
+        window.resetGame = resetGame;
+        window.updateHUD = updateHUD;
+        window.setCameraForColor = setCameraForColor;
+        window.showCombatToast = showCombatToast;
+        window.copyTextToClipboard = copyTextToClipboard;
+        window.openMultiplayerModal = openMultiplayerModal;
+        window.closeMultiplayerModal = closeMultiplayerModal;
+        window.setGameMode = function(mode) {
+            gameMode = mode;
+            updateHUD();
+        };
+
         window.onload = function () {
             syncBoardFromFEN();
             animate();
         };
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'wizards-chess-sanctuary';
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+        let currentUserId = null;
+        let roomUnsubscribe = null;
+        let localChannel = null;
+
+        const userIdLabel = document.getElementById('mp-user-id');
+        const errorMsgEl = document.getElementById('mp-error-msg');
+        const setupView = document.getElementById('mp-setup-view');
+        const activeView = document.getElementById('mp-active-view');
+        const modalRoomCode = document.getElementById('modal-room-code');
+        const seatWhiteStatus = document.getElementById('seat-white-status');
+        const seatBlackStatus = document.getElementById('seat-black-status');
+        const inputRoomCode = document.getElementById('input-room-code');
+
+        function showMpError(msg) {
+            if (!errorMsgEl) return;
+            if (!msg) {
+                errorMsgEl.classList.add('hidden');
+                errorMsgEl.textContent = '';
+            } else {
+                errorMsgEl.textContent = msg;
+                errorMsgEl.classList.remove('hidden');
+            }
+        }
+
+        function generateRoomCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = 'WZ';
+            for (let i = 0; i < 4; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        function buildInviteUrl(roomCode) {
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.set('room', roomCode);
+                return url.toString();
+            } catch (e) {
+                return `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
+            }
+        }
+
+        async function initMultiplayerService() {
+            try {
+                if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                    const firebaseConfig = JSON.parse(__firebase_config);
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            currentUser = user;
+                            currentUserId = user.uid;
+                            userIdLabel.textContent = currentUserId;
+                            checkUrlForRoomInvite();
+                        }
+                    });
+                } else {
+                    // Fallback instant session ID for environments without __firebase_config
+                    currentUserId = 'WIZ-' + crypto.randomUUID().slice(0, 8).toUpperCase();
+                    userIdLabel.textContent = currentUserId;
+                    checkUrlForRoomInvite();
+                }
+            } catch (err) {
+                console.error('Sanctuary Auth Init Error:', err);
+                currentUserId = 'WIZ-' + crypto.randomUUID().slice(0, 8).toUpperCase();
+                userIdLabel.textContent = currentUserId;
+                checkUrlForRoomInvite();
+            }
+        }
+
+        function getRoomDocRef(roomCode) {
+            // Mandatory RULE 1 path: /artifacts/{appId}/public/data/sanctuary_rooms/{roomCode}
+            return doc(db, 'artifacts', appId, 'public', 'data', 'sanctuary_rooms', roomCode);
+        }
+
+        function applyRoomSnapshot(data) {
+            if (!data) return;
+            const st = window.onlineState;
+
+            st.hostId = data.hostId || null;
+            st.guestId = data.guestId || null;
+
+            // Update modal seat indicators
+            seatWhiteStatus.textContent = st.hostId ? `Host (${st.hostId.slice(0, 6)}...)` : 'Waiting...';
+            if (st.guestId) {
+                seatBlackStatus.textContent = `Connected (${st.guestId.slice(0, 6)}...)`;
+                seatBlackStatus.className = 'font-mono text-[11px] text-emerald-300';
+            } else {
+                seatBlackStatus.textContent = 'Waiting for friend...';
+                seatBlackStatus.className = 'font-mono text-[11px] text-amber-300 animate-pulse';
+            }
+
+            // Detect remote board reset
+            if (typeof data.resetNonce === 'number' && data.resetNonce > st.resetNonce) {
+                st.resetNonce = data.resetNonce;
+                st.moveCount = 0;
+                window.resetGame(true);
+                window.showCombatToast('The Sanctuary Board has been restored!');
+                return;
+            }
+
+            // Detect incoming remote move
+            if (typeof data.moveCount === 'number' && data.moveCount > st.moveCount && data.lastMove) {
+                st.moveCount = data.moveCount;
+                try {
+                    const moveData = typeof data.lastMove === 'string' ? JSON.parse(data.lastMove) : data.lastMove;
+                    const existingHistory = window.game.history();
+                    if (existingHistory.length < data.moveCount) {
+                        window.executeAnimatedMove(moveData.from, moveData.to, moveData.promotion || 'q', true);
+                    }
+                } catch (e) {
+                    console.error('Failed to parse remote move:', e);
+                }
+            } else if (data.fen && data.moveCount > st.moveCount) {
+                st.moveCount = data.moveCount;
+                window.game.load(data.fen);
+                window.syncBoardFromFEN();
+            }
+
+            window.updateHUD();
+        }
+
+        function subscribeToRoom(roomCode) {
+            if (roomUnsubscribe) {
+                roomUnsubscribe();
+                roomUnsubscribe = null;
+            }
+            if (localChannel) {
+                localChannel.close();
+                localChannel = null;
+            }
+
+            // Always set up BroadcastChannel for instant cross-tab testing on same device
+            if ('BroadcastChannel' in window) {
+                localChannel = new BroadcastChannel(`wizards_chess_${roomCode}`);
+                localChannel.onmessage = (ev) => {
+                    if (ev.data) applyRoomSnapshot(ev.data);
+                };
+            }
+
+            if (db && currentUser) {
+                const roomRef = getRoomDocRef(roomCode);
+                roomUnsubscribe = onSnapshot(
+                    roomRef,
+                    (snap) => {
+                        if (snap.exists()) {
+                            applyRoomSnapshot(snap.data());
+                        }
+                    },
+                    (err) => {
+                        console.error('Room Snapshot Error:', err);
+                        showMpError('Lost connection to Sanctuary room.');
+                    }
+                );
+            }
+        }
+
+        function switchModalToActiveRoom(roomCode) {
+            modalRoomCode.textContent = roomCode;
+            setupView.classList.add('hidden');
+            activeView.classList.remove('hidden');
+            window.setGameMode('online');
+            window.updateHUD();
+        }
+
+        async function createSanctuaryRoom() {
+            showMpError('');
+            if (!currentUserId) {
+                showMpError('Still establishing Sanctuary ID, please wait a moment...');
+                return;
+            }
+
+            const btnCreate = document.getElementById('btn-create-room');
+            const origHtml = btnCreate.innerHTML;
+            btnCreate.disabled = true;
+            btnCreate.innerHTML = `<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span><span>Forging Sanctuary...</span>`;
+
+            try {
+                const roomCode = generateRoomCode();
+                window.resetGame(true);
+
+                const initialRoomData = {
+                    roomCode,
+                    hostId: currentUserId,
+                    guestId: null,
+                    fen: window.game.fen(),
+                    lastMove: null,
+                    moveCount: 0,
+                    resetNonce: 0,
+                    updatedAt: Date.now()
+                };
+
+                if (db && currentUser) {
+                    const roomRef = getRoomDocRef(roomCode);
+                    await setDoc(roomRef, initialRoomData);
+                }
+
+                const st = window.onlineState;
+                st.roomCode = roomCode;
+                st.myColor = 'w';
+                st.hostId = currentUserId;
+                st.guestId = null;
+                st.moveCount = 0;
+                st.resetNonce = 0;
+
+                window.setCameraForColor('w');
+                subscribeToRoom(roomCode);
+                switchModalToActiveRoom(roomCode);
+                window.showCombatToast(`Room ${roomCode} created! You command Marble (White).`);
+            } catch (err) {
+                console.error('Error creating room:', err);
+                showMpError('Could not create room. Please try again.');
+            } finally {
+                btnCreate.disabled = false;
+                btnCreate.innerHTML = origHtml;
+            }
+        }
+
+        async function joinSanctuaryRoom(rawCode) {
+            showMpError('');
+            const code = (rawCode || '').trim().toUpperCase();
+            if (!code || code.length < 4) {
+                showMpError('Please enter a valid 6-character Sanctuary Room Code.');
+                return;
+            }
+            if (!currentUserId) {
+                showMpError('Still establishing Sanctuary ID, please wait a moment...');
+                return;
+            }
+
+            const btnJoin = document.getElementById('btn-join-room');
+            const origText = btnJoin.textContent;
+            btnJoin.disabled = true;
+            btnJoin.textContent = 'Joining...';
+
+            try {
+                const st = window.onlineState;
+
+                if (db && currentUser) {
+                    const roomRef = getRoomDocRef(code);
+                    const snap = await getDoc(roomRef);
+
+                    if (!snap.exists()) {
+                        showMpError(`Room "${code}" was not found in the Sanctuary.`);
+                        return;
+                    }
+
+                    const data = snap.data();
+                    let assignedColor = 'b';
+
+                    if (data.hostId === currentUserId) {
+                        assignedColor = 'w';
+                    } else if (!data.guestId || data.guestId === currentUserId) {
+                        assignedColor = 'b';
+                        if (data.guestId !== currentUserId) {
+                            await updateDoc(roomRef, {
+                                guestId: currentUserId,
+                                updatedAt: Date.now()
+                            });
+                        }
+                    } else {
+                        assignedColor = 'spectator';
+                    }
+
+                    st.roomCode = code;
+                    st.myColor = assignedColor;
+                    st.hostId = data.hostId;
+                    st.guestId = assignedColor === 'b' ? currentUserId : data.guestId;
+                    st.moveCount = data.moveCount || 0;
+                    st.resetNonce = data.resetNonce || 0;
+
+                    if (data.fen) {
+                        window.game.load(data.fen);
+                        window.syncBoardFromFEN();
+                    }
+                } else {
+                    // Fallback local BroadcastChannel join
+                    st.roomCode = code;
+                    st.myColor = 'b';
+                    st.guestId = currentUserId;
+                }
+
+                window.setCameraForColor(st.myColor === 'b' ? 'b' : 'w');
+                subscribeToRoom(code);
+                switchModalToActiveRoom(code);
+
+                if (localChannel) {
+                    localChannel.postMessage({
+                        roomCode: code,
+                        hostId: st.hostId || 'HOST',
+                        guestId: currentUserId,
+                        moveCount: st.moveCount,
+                        resetNonce: st.resetNonce
+                    });
+                }
+
+                const roleLabel = st.myColor === 'w' ? 'Marble (White)' : (st.myColor === 'b' ? 'Obsidian (Black)' : 'Spectator');
+                window.showCombatToast(`Joined Room ${code} as ${roleLabel}!`);
+            } catch (err) {
+                console.error('Error joining room:', err);
+                showMpError('Unable to join room. Check the code and try again.');
+            } finally {
+                btnJoin.disabled = false;
+                btnJoin.textContent = origText;
+            }
+        }
+
+        function leaveSanctuaryRoom() {
+            if (roomUnsubscribe) {
+                roomUnsubscribe();
+                roomUnsubscribe = null;
+            }
+            if (localChannel) {
+                localChannel.close();
+                localChannel = null;
+            }
+
+            const st = window.onlineState;
+            st.roomCode = null;
+            st.myColor = null;
+            st.hostId = null;
+            st.guestId = null;
+            st.moveCount = 0;
+
+            activeView.classList.add('hidden');
+            setupView.classList.remove('hidden');
+            window.setGameMode('ai');
+            window.showCombatToast('Left online room. Returned to Wizard AI mode.');
+        }
+
+        // Hook up Cloud Move & Reset pushes called by the 3D engine
+        window.onlineState.pushMoveToCloud = async (moveObj) => {
+            const st = window.onlineState;
+            if (!st.roomCode) return;
+
+            st.moveCount += 1;
+            const payload = {
+                fen: window.game.fen(),
+                lastMove: JSON.stringify({
+                    from: moveObj.from,
+                    to: moveObj.to,
+                    promotion: moveObj.promotion || 'q',
+                    san: moveObj.san
+                }),
+                moveCount: st.moveCount,
+                updatedAt: Date.now()
+            };
+
+            if (localChannel) {
+                localChannel.postMessage({
+                    ...payload,
+                    hostId: st.hostId,
+                    guestId: st.guestId,
+                    resetNonce: st.resetNonce
+                });
+            }
+
+            if (db && currentUser) {
+                try {
+                    const roomRef = getRoomDocRef(st.roomCode);
+                    await updateDoc(roomRef, payload);
+                } catch (err) {
+                    console.error('Failed to sync move:', err);
+                }
+            }
+        };
+
+        window.onlineState.pushResetToCloud = async () => {
+            const st = window.onlineState;
+            if (!st.roomCode) return;
+
+            st.resetNonce = (st.resetNonce || 0) + 1;
+            st.moveCount = 0;
+
+            const payload = {
+                fen: window.game.fen(),
+                lastMove: null,
+                moveCount: 0,
+                resetNonce: st.resetNonce,
+                updatedAt: Date.now()
+            };
+
+            if (localChannel) {
+                localChannel.postMessage({
+                    ...payload,
+                    hostId: st.hostId,
+                    guestId: st.guestId
+                });
+            }
+
+            if (db && currentUser) {
+                try {
+                    const roomRef = getRoomDocRef(st.roomCode);
+                    await updateDoc(roomRef, payload);
+                } catch (err) {
+                    console.error('Failed to sync board reset:', err);
+                }
+            }
+        };
+
+        function checkUrlForRoomInvite() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const invitedRoom = params.get('room');
+                if (invitedRoom && !window.onlineState.roomCode) {
+                    inputRoomCode.value = invitedRoom.toUpperCase();
+                    window.openMultiplayerModal();
+                    joinSanctuaryRoom(invitedRoom);
+                }
+            } catch (e) {
+                // Ignore URL parsing issues in restricted iframes
+            }
+        }
+
+        // Wire Modal & Top-Bar Multiplayer Buttons
+        document.getElementById('btn-create-room').addEventListener('click', createSanctuaryRoom);
+        document.getElementById('btn-join-room').addEventListener('click', () => {
+            joinSanctuaryRoom(inputRoomCode.value);
+        });
+        inputRoomCode.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') joinSanctuaryRoom(inputRoomCode.value);
+        });
+        document.getElementById('btn-leave-room').addEventListener('click', leaveSanctuaryRoom);
+
+        // Copy Room Code & Invite Link Buttons (Both Modal and Floating HUD Bar)
+        document.getElementById('btn-modal-copy-code').addEventListener('click', () => {
+            if (!window.onlineState.roomCode) return;
+            window.copyTextToClipboard(window.onlineState.roomCode, 'modal-copy-code-text', 'Copy Code');
+        });
+        document.getElementById('btn-modal-copy-link').addEventListener('click', () => {
+            if (!window.onlineState.roomCode) return;
+            window.copyTextToClipboard(buildInviteUrl(window.onlineState.roomCode), 'modal-copy-link-text', 'Copy Invite Link');
+        });
+        document.getElementById('btn-copy-code').addEventListener('click', () => {
+            if (!window.onlineState.roomCode) return;
+            window.copyTextToClipboard(window.onlineState.roomCode, 'copy-code-label', 'Copy Code');
+        });
+        document.getElementById('btn-copy-link').addEventListener('click', () => {
+            if (!window.onlineState.roomCode) return;
+            window.copyTextToClipboard(buildInviteUrl(window.onlineState.roomCode), 'copy-link-label', 'Invite Link');
+        });
+
+        // Start Authentication & Room Listener
+        initMultiplayerService();
     </script>
 </body>
 </html>
